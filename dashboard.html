@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+  <h2>Dashboard</h2>
+  <p id="saldo"></p>
+  <h3>Isi Pulsa</h3>
+  <input type="text" id="nomor" placeholder="Nomor HP"><br>
+  <input type="number" id="nominal" placeholder="Nominal"><br>
+  <button onclick="isiPulsa()">Kirim</button>
+  <h3>Topup Saldo</h3>
+  <input type="number" id="jumlah" placeholder="Jumlah"><br>
+  <button onclick="topup()">Topup</button>
+  <h3>Riwayat Transaksi</h3>
+  <ul id="riwayat"></ul>
+  <script>
+    const user = localStorage.getItem("username");
+    fetch(`http://localhost:8000/saldo/${user}`).then(r=>r.json()).then(d=>{
+      document.getElementById("saldo").innerText = "Saldo: Rp " + d.saldo;
+    });
+
+    function isiPulsa() {
+      fetch("http://localhost:8000/isi-pulsa", {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          username: user,
+          nomor: document.getElementById("nomor").value,
+          nominal: parseInt(document.getElementById("nominal").value),
+          jenis: "pulsa"
+        })
+      }).then(r=>r.json()).then(d=>alert(d.message));
+    }
+
+    function topup() {
+      fetch("http://localhost:8000/topup", {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          username: user,
+          jumlah: parseInt(document.getElementById("jumlah").value)
+        })
+      }).then(r=>r.json()).then(d=>alert(d.message));
+    }
+
+    fetch(`http://localhost:8000/riwayat/${user}`).then(r=>r.json()).then(d=>{
+      let ul = document.getElementById("riwayat");
+      d.forEach(t => {
+        let li = document.createElement("li");
+        li.innerText = `${t.tanggal} - ${t.nomor} - Rp${t.nominal}`;
+        ul.appendChild(li);
+      });
+    });
+  </script>
+</body>
+</html>
